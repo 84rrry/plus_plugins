@@ -1,15 +1,34 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/services.dart';
-import 'package:flutter_test/flutter_test.dart'
-    show TestDefaultBinaryMessengerBinding, TestWidgetsFlutterBinding;
+import 'package:flutter_test/flutter_test.dart' show TestDefaultBinaryMessengerBinding, TestWidgetsFlutterBinding;
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:test/test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('gravityEvents are streamed', () async {
+    const channelName = 'dev.fluttercommunity.plus/sensors/gravity';
+    final date = DateTime.now();
+    final sensorData = <double>[
+      1.0,
+      2.0,
+      3.0,
+      date.microsecondsSinceEpoch.toDouble(),
+    ];
+    _initializeFakeMethodChannel('setGravitySamplingPeriod');
+    _initializeFakeSensorChannel(channelName, sensorData);
+
+    final event = await gravityEventStream().first;
+
+    expect(event.x, sensorData[0]);
+    expect(event.y, sensorData[1]);
+    expect(event.z, sensorData[2]);
+    expect(event.timestamp, date);
+  });
 
   test('accelerometerEvents are streamed', () async {
     const channelName = 'dev.fluttercommunity.plus/sensors/accelerometer';
@@ -111,9 +130,8 @@ void main() {
 void _initializeFakeMethodChannel(String methodName) {
   const standardMethod = StandardMethodCodec();
 
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMessageHandler('dev.fluttercommunity.plus/sensors/method',
-          (ByteData? message) async {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler('dev.fluttercommunity.plus/sensors/method',
+      (ByteData? message) async {
     final methodCall = standardMethod.decodeMethodCall(message);
     if (methodCall.method == methodName) {
       return standardMethod.encodeSuccessEnvelope(null);
@@ -127,16 +145,14 @@ void _initializeFakeSensorChannel(String channelName, List<double> sensorData) {
   const standardMethod = StandardMethodCodec();
 
   void emitEvent(ByteData? event) {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .handlePlatformMessage(
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
       channelName,
       event,
       (ByteData? reply) {},
     );
   }
 
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMessageHandler(channelName, (ByteData? message) async {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channelName, (ByteData? message) async {
     final methodCall = standardMethod.decodeMethodCall(message);
     if (methodCall.method == 'listen') {
       emitEvent(standardMethod.encodeSuccessEnvelope(sensorData));

@@ -33,6 +33,15 @@ Stream<MagnetometerEvent> get magnetometerEvents {
   return _sensors.magnetometerEvents;
 }
 
+/// Returns a broadcast stream of events from the device virtual gravity sensor at the
+/// given sampling frequency.
+@override
+Stream<GravityEvent> gravityEventStream({
+  Duration samplingPeriod = SensorInterval.normalInterval,
+}) {
+  return _sensors.gravityEventStream(samplingPeriod: samplingPeriod);
+}
+
 /// Returns a broadcast stream of events from the device accelerometer at the
 /// given sampling frequency.
 @override

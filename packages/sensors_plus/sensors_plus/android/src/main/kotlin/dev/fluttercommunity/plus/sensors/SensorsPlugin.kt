@@ -66,7 +66,7 @@ class SensorsPlugin : FlutterPlugin {
         val sensorsManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
 
-        gravityChannel = EventChannel(messenger, TYPE_GRAVITY)
+        gravityChannel = EventChannel(messenger, GRAVITY_CHANNEL_NAME)
         gravityStreamHandler = StreamHandlerImpl(
             sensorsManager,
             Sensor.TYPE_GRAVITY
@@ -118,7 +118,7 @@ class SensorsPlugin : FlutterPlugin {
         magnetometerChannel.setStreamHandler(null)
         barometerChannel.setStreamHandler(null)
 
-        gravityChannel.onCancel(null)
+        gravityStreamHandler.onCancel(null)
         accelerometerStreamHandler.onCancel(null)
         userAccelStreamHandler.onCancel(null)
         gyroscopeStreamHandler.onCancel(null)
