@@ -3,13 +3,22 @@
 // found in the LICENSE file.
 
 import 'package:flutter/services.dart';
-import 'package:flutter_test/flutter_test.dart'
-    show TestDefaultBinaryMessengerBinding, TestWidgetsFlutterBinding;
+import 'package:flutter_test/flutter_test.dart' show TestDefaultBinaryMessengerBinding, TestWidgetsFlutterBinding;
 import 'package:sensors_plus_platform_interface/sensors_plus_platform_interface.dart';
+import 'package:sensors_plus_platform_interface/src/gravity_event.dart';
 import 'package:sensors_plus_platform_interface/src/method_channel_sensors.dart';
 import 'package:test/test.dart';
 
 final MethodChannelSensors methodChannel = MethodChannelSensors();
+
+/// Returns a broadcast stream of events from the device gravity sensor at the
+/// given sampling frequency.
+@override
+Stream<GravityEvent> gravityEventStream({
+  Duration samplingPeriod = SensorInterval.normalInterval,
+}) {
+  return methodChannel.gravityEventStream(samplingPeriod: samplingPeriod);
+}
 
 /// Returns a broadcast stream of events from the device accelerometer at the
 /// given sampling frequency.
@@ -35,8 +44,7 @@ Stream<GyroscopeEvent> gyroscopeEventStream({
 Stream<UserAccelerometerEvent> userAccelerometerEventStream({
   Duration samplingPeriod = SensorInterval.normalInterval,
 }) {
-  return methodChannel.userAccelerometerEventStream(
-      samplingPeriod: samplingPeriod);
+  return methodChannel.userAccelerometerEventStream(samplingPeriod: samplingPeriod);
 }
 
 /// Returns a broadcast stream of events from the device magnetometer at the
@@ -59,6 +67,26 @@ Stream<BarometerEvent> barometerEventStream({
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('gravityEvents are streamed', () async {
+    const channelName = 'dev.fluttercommunity.plus/sensors/gravity';
+    final date = DateTime.now();
+    final sensorData = <double>[
+      1.0,
+      2.0,
+      3.0,
+      date.microsecondsSinceEpoch.toDouble(),
+    ];
+    _initializeFakeMethodChannel('setGravitySamplingPeriod');
+    _initializeFakeSensorChannel(channelName, sensorData);
+
+    final event = await gravityEventStream().first;
+
+    expect(event.x, sensorData[0]);
+    expect(event.y, sensorData[1]);
+    expect(event.z, sensorData[2]);
+    expect(event.timestamp, date);
+  });
 
   test('accelerometerEvents are streamed', () async {
     const channelName = 'dev.fluttercommunity.plus/sensors/accelerometer';
@@ -160,9 +188,8 @@ void main() {
 void _initializeFakeMethodChannel(String methodName) {
   const standardMethod = StandardMethodCodec();
 
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMessageHandler('dev.fluttercommunity.plus/sensors/method',
-          (ByteData? message) async {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler('dev.fluttercommunity.plus/sensors/method',
+      (ByteData? message) async {
     final methodCall = standardMethod.decodeMethodCall(message);
     if (methodCall.method == methodName) {
       return standardMethod.encodeSuccessEnvelope(null);
@@ -176,16 +203,14 @@ void _initializeFakeSensorChannel(String channelName, List<double> sensorData) {
   const standardMethod = StandardMethodCodec();
 
   void emitEvent(ByteData? event) {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .handlePlatformMessage(
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
       channelName,
       event,
       (ByteData? reply) {},
     );
   }
 
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMessageHandler(channelName, (ByteData? message) async {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channelName, (ByteData? message) async {
     final methodCall = standardMethod.decodeMethodCall(message);
     if (methodCall.method == 'listen') {
       emitEvent(standardMethod.encodeSuccessEnvelope(sensorData));
