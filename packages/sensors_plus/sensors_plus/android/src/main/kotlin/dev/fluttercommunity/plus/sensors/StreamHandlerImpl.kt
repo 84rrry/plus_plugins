@@ -54,6 +54,7 @@ internal class StreamHandlerImpl(
 
     private fun getSensorName(sensorType: Int): String {
         return when (sensorType) {
+            Sensor.TYPE_GRAVITY -> "Gravity"
             Sensor.TYPE_ACCELEROMETER -> "Accelerometer"
             Sensor.TYPE_LINEAR_ACCELERATION -> "User Accelerometer"
             Sensor.TYPE_GYROSCOPE -> "Gyroscope"
