@@ -5,7 +5,9 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:sensors_plus_platform_interface/src/gravity_event.dart';
 import 'package:sensors_plus_platform_interface/src/method_channel_sensors.dart';
 import 'package:sensors_plus_platform_interface/src/sensor_interval.dart';
 
@@ -43,6 +45,11 @@ abstract class SensorsPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  /// A broadcast stream of events from the device virtual gravity sensor.
+  Stream<GravityEvent> get gravityEvents {
+    return gravityEventStream();
+  }
+
   /// A broadcast stream of events from the device accelerometer.
   @nonVirtual
   @Deprecated('Use accelerometerEventStream() instead.')
@@ -69,6 +76,15 @@ abstract class SensorsPlatform extends PlatformInterface {
   @Deprecated('Use magnetometerEventStream() instead.')
   Stream<MagnetometerEvent> get magnetometerEvents {
     return magnetometerEventStream();
+  }
+
+  /// Returns a broadcast stream of events from the device gravity sensor at the
+  /// given sampling frequency.
+  Stream<GravityEvent> gravityEventStream({
+    Duration samplingPeriod = SensorInterval.normalInterval,
+  }) {
+    throw UnimplementedError(
+        'listenToGravityEvents has not been implemented.');
   }
 
   /// Returns a broadcast stream of events from the device accelerometer at the
