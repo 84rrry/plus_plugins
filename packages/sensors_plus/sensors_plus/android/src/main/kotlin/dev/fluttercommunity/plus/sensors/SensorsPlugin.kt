@@ -13,12 +13,14 @@ import io.flutter.plugin.common.MethodChannel
 class SensorsPlugin : FlutterPlugin {
     private lateinit var methodChannel: MethodChannel
 
+    private lateinit var gravityChannel: EventChannel
     private lateinit var accelerometerChannel: EventChannel
     private lateinit var userAccelChannel: EventChannel
     private lateinit var gyroscopeChannel: EventChannel
     private lateinit var magnetometerChannel: EventChannel
     private lateinit var barometerChannel: EventChannel
 
+    private lateinit var gravityStreamHandler: StreamHandlerImpl
     private lateinit var accelerometerStreamHandler: StreamHandlerImpl
     private lateinit var userAccelStreamHandler: StreamHandlerImpl
     private lateinit var gyroscopeStreamHandler: StreamHandlerImpl
@@ -39,6 +41,7 @@ class SensorsPlugin : FlutterPlugin {
         methodChannel = MethodChannel(messenger, METHOD_CHANNEL_NAME)
         methodChannel.setMethodCallHandler { call, result ->
             val streamHandler = when (call.method) {
+                "setGravitySamplingPeriod" -> gravityStreamHandler
                 "setAccelerationSamplingPeriod" -> accelerometerStreamHandler
                 "setUserAccelerometerSamplingPeriod" -> userAccelStreamHandler
                 "setGyroscopeSamplingPeriod" -> gyroscopeStreamHandler
@@ -61,6 +64,13 @@ class SensorsPlugin : FlutterPlugin {
 
     private fun setupEventChannels(context: Context, messenger: BinaryMessenger) {
         val sensorsManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        gravityChannel = EventChannel(messenger, GRAVITY_CHANNEL_NAME)
+        gravityStreamHandler = StreamHandlerImpl(
+            sensorsManager,
+            Sensor.TYPE_GRAVITY
+        )
+        gravityChannel.setStreamHandler(gravityStreamHandler)
 
         accelerometerChannel = EventChannel(messenger, ACCELEROMETER_CHANNEL_NAME)
         accelerometerStreamHandler = StreamHandlerImpl(
@@ -99,6 +109,7 @@ class SensorsPlugin : FlutterPlugin {
     }
 
     private fun teardownEventChannels() {
+        gravityChannel.setStreamHandler(null)
         accelerometerChannel.setStreamHandler(null)
         userAccelChannel.setStreamHandler(null)
         gyroscopeChannel.setStreamHandler(null)
@@ -115,6 +126,8 @@ class SensorsPlugin : FlutterPlugin {
     companion object {
         private const val METHOD_CHANNEL_NAME =
             "dev.fluttercommunity.plus/sensors/method"
+        private const val GRAVITY_CHANNEL_NAME =
+            "dev.fluttercommunity.plus/sensors/gravity"
         private const val ACCELEROMETER_CHANNEL_NAME =
             "dev.fluttercommunity.plus/sensors/accelerometer"
         private const val GYROSCOPE_CHANNEL_NAME =
