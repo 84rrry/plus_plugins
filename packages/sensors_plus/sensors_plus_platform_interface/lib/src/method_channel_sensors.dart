@@ -7,11 +7,15 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:sensors_plus_platform_interface/sensors_plus_platform_interface.dart';
+import 'package:sensors_plus_platform_interface/src/gravity_event.dart';
 
 /// A method channel -based implementation of the SensorsPlatform interface.
 class MethodChannelSensors extends SensorsPlatform {
   static const MethodChannel _methodChannel =
       MethodChannel('dev.fluttercommunity.plus/sensors/method');
+
+  static const EventChannel _gravityEventChannel =
+      EventChannel('dev.fluttercommunity.plus/sensors/gravity');
 
   static const EventChannel _accelerometerEventChannel =
       EventChannel('dev.fluttercommunity.plus/sensors/accelerometer');
@@ -29,11 +33,43 @@ class MethodChannelSensors extends SensorsPlatform {
       EventChannel('dev.fluttercommunity.plus/sensors/barometer');
 
   final logger = Logger('MethodChannelSensors');
+  Stream<GravityEvent>? _gravityEvents;
   Stream<AccelerometerEvent>? _accelerometerEvents;
   Stream<GyroscopeEvent>? _gyroscopeEvents;
   Stream<UserAccelerometerEvent>? _userAccelerometerEvents;
   Stream<MagnetometerEvent>? _magnetometerEvents;
   Stream<BarometerEvent>? _barometerEvents;
+
+  /// Returns a broadcast stream of events from the device virtual gravity sensor at the
+  /// given sampling frequency.
+  @override
+  Stream<GravityEvent> gravityEventStream({
+    Duration samplingPeriod = SensorInterval.normalInterval,
+  }) {
+    var microseconds = samplingPeriod.inMicroseconds;
+    if (microseconds >= 1 && microseconds <= 3) {
+      logger.warning('The SamplingPeriod is currently set to $microsecondsμs, '
+          'which is a reserved value in Android. Please consider changing it '
+          'to either 0 or 4μs. See https://developer.android.com/reference/'
+          'android/hardware/SensorManager#registerListener(android.hardware.'
+          'SensorEventListener,%20android.hardware.Sensor,%20int) for more '
+          'information');
+      microseconds = 0;
+    }
+    _methodChannel.invokeMethod('setGravitySamplingPeriod', microseconds);
+    _gravityEvents ??= _gravityEventChannel
+        .receiveBroadcastStream()
+        .map((dynamic event) {
+      final list = event.cast<double>();
+      return GravityEvent(
+        list[0]!,
+        list[1]!,
+        list[2]!,
+        DateTime.fromMicrosecondsSinceEpoch(list[3]!.toInt()),
+      );
+    });
+    return _gravityEvents!;
+  }
 
   /// Returns a broadcast stream of events from the device accelerometer at the
   /// given sampling frequency.
