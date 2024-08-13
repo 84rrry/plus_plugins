@@ -4,8 +4,7 @@ import 'src/sensors.dart';
 
 export 'package:sensors_plus_platform_interface/sensors_plus_platform_interface.dart';
 
-export 'src/sensors.dart'
-    if (dart.library.js_interop) 'src/sensors_plus_web.dart';
+export 'src/sensors.dart' if (dart.library.js_interop) 'src/sensors_plus_web.dart';
 
 final _sensors = Sensors();
 
@@ -31,6 +30,15 @@ Stream<UserAccelerometerEvent> get userAccelerometerEvents {
 @Deprecated('Use magnetometerEventStream() instead.')
 Stream<MagnetometerEvent> get magnetometerEvents {
   return _sensors.magnetometerEvents;
+}
+
+/// Returns a broadcast stream of events from the device virtual gravity sensor at the
+/// given sampling frequency.
+@override
+Stream<GravityEvent> gravityEventStream({
+  Duration samplingPeriod = SensorInterval.normalInterval,
+}) {
+  return _sensors.gravityEventStream(samplingPeriod: samplingPeriod);
 }
 
 /// Returns a broadcast stream of events from the device accelerometer at the

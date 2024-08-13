@@ -13,6 +13,19 @@ class Sensors extends SensorsPlatform {
 
   static SensorsPlatform get _platform => SensorsPlatform.instance;
 
+  /// Returns a broadcast stream of events fromthe device virtual gravity sensor at the
+  /// given sampling frequency.
+  ///
+  /// This method always returning the same stream. If this method is called
+  /// again, the sampling period of the stream will be update. All previous
+  /// listener will also be affected.
+  @override
+  Stream<GravityEvent> gravityEventStream({
+    Duration samplingPeriod = SensorInterval.normalInterval,
+  }) {
+    return _platform.gravityEventStream(samplingPeriod: samplingPeriod);
+  }
+
   /// Returns a broadcast stream of events from the device accelerometer at the
   /// given sampling frequency.
   ///
