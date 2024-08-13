@@ -1,13 +1,12 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:sensors_plus_platform_interface/sensors_plus_platform_interface.dart';
-import 'package:sensors_plus_platform_interface/src/gravity_event.dart';
+
 
 /// A method channel -based implementation of the SensorsPlatform interface.
 class MethodChannelSensors extends SensorsPlatform {
