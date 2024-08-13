@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:sensors_plus_platform_interface/src/gravity_event.dart';
 import 'package:sensors_plus_platform_interface/src/method_channel_sensors.dart';
 import 'package:sensors_plus_platform_interface/src/sensor_interval.dart';
 
@@ -71,13 +72,22 @@ abstract class SensorsPlatform extends PlatformInterface {
     return magnetometerEventStream();
   }
 
+  /// Returns a broadcast stream of events from the device virtual gravity sensor at the
+  /// given sampling frequency.
+  Stream<GravityEvent> gravityEventStream({
+    Duration samplingPeriod = SensorInterval.normalInterval,
+  }) {
+    throw UnimplementedError(
+        'gravityEventStream has not been implemented.');
+  }
+
   /// Returns a broadcast stream of events from the device accelerometer at the
   /// given sampling frequency.
   Stream<AccelerometerEvent> accelerometerEventStream({
     Duration samplingPeriod = SensorInterval.normalInterval,
   }) {
     throw UnimplementedError(
-        'listenToAccelerometerEvents has not been implemented.');
+        'accelerometerEventStream has not been implemented.');
   }
 
   /// Returns a broadcast stream of events from the device gyroscope at the
@@ -85,7 +95,7 @@ abstract class SensorsPlatform extends PlatformInterface {
   Stream<GyroscopeEvent> gyroscopeEventStream({
     Duration samplingPeriod = SensorInterval.normalInterval,
   }) {
-    throw UnimplementedError('gyroscopeEvents has not been implemented.');
+    throw UnimplementedError('gyroscopeEventStream has not been implemented.');
   }
 
   /// Returns a broadcast stream of events from the device accelerometer with
@@ -94,7 +104,7 @@ abstract class SensorsPlatform extends PlatformInterface {
     Duration samplingPeriod = SensorInterval.normalInterval,
   }) {
     throw UnimplementedError(
-        'userAccelerometerEvents has not been implemented.');
+        'userAccelerometerEventStream has not been implemented.');
   }
 
   /// Returns a broadcast stream of events from the device magnetometer at the
@@ -102,7 +112,7 @@ abstract class SensorsPlatform extends PlatformInterface {
   Stream<MagnetometerEvent> magnetometerEventStream({
     Duration samplingPeriod = SensorInterval.normalInterval,
   }) {
-    throw UnimplementedError('magnetometerEvents has not been implemented.');
+    throw UnimplementedError('magnetometerEventStream has not been implemented.');
   }
 
   /// Returns a broadcast stream of events from the device barometer at the
@@ -110,6 +120,6 @@ abstract class SensorsPlatform extends PlatformInterface {
   Stream<BarometerEvent> barometerEventStream({
     Duration samplingPeriod = SensorInterval.normalInterval,
   }) {
-    throw UnimplementedError('barometerEvents has not been implemented.');
+    throw UnimplementedError('barometerEventStream has not been implemented.');
   }
 }
