@@ -16,6 +16,7 @@ import 'src/magnetometer_event.dart';
 import 'src/user_accelerometer_event.dart';
 import 'src/barometer_event.dart';
 
+export 'src/gravity_event.dart';
 export 'src/accelerometer_event.dart';
 export 'src/gyroscope_event.dart';
 export 'src/magnetometer_event.dart';
