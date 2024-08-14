@@ -48,6 +48,56 @@ func sendFlutter(x: Float64, y: Float64, z: Float64, timestamp: TimeInterval, si
     }
 }
 
+class FPPGravityStreamHandlerPlus: NSObject, MotionStreamHandler {
+
+    var samplingPeriod = 200000 {
+        didSet {
+            _initMotionManager()
+            _motionManager.deviceMotionUpdateInterval = Double(samplingPeriod) * 0.000001
+        }
+    }
+
+    func onListen(
+            withArguments arguments: Any?,
+            eventSink sink: @escaping FlutterEventSink
+    ) -> FlutterError? {
+        _initMotionManager()
+        _motionManager.startDeviceMotionUpdates(to: OperationQueue()) { data, error in
+            if _isCleanUp {
+                return
+            }
+            if (error != nil) {
+                sink(FlutterError.init(
+                        code: "UNAVAILABLE",
+                        message: error!.localizedDescription,
+                        details: nil
+                ))
+                return
+            }
+            // Multiply by gravity, and adjust sign values to
+            // align with Android.
+            let gravityVector = data!.gravity
+            sendFlutter(
+                    x: -gravityVector.x * GRAVITY,
+                    y: -gravityVector.y * GRAVITY,
+                    z: -gravityVector.z * GRAVITY,
+                    timestamp: data!.timestamp,
+                    sink: sink
+            )
+        }
+        return nil
+    }
+
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        _motionManager.stopDeviceMotionUpdates()
+        return nil
+    }
+
+    func dealloc() {
+        FPPSensorsPlusPlugin._cleanUp()
+    }
+}
+
 class FPPAccelerometerStreamHandlerPlus: NSObject, MotionStreamHandler {
 
     var samplingPeriod = 200000 {

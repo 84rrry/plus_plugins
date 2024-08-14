@@ -11,6 +11,13 @@ var _isCleanUp = false
 public class FPPSensorsPlusPlugin: NSObject, FlutterPlugin {
 
     public static func register(with registrar: FlutterPluginRegistrar) {
+        let gravityStreamHandler = FPPGravityStreamHandlerPlus()
+        let gravityStreamHandlerName = "dev.fluttercommunity.plus/sensors/gravity"
+        let gravityChannel = FlutterEventChannel(
+                name: gravityStreamHandlerName,
+                binaryMessenger: registrar.messenger()
+        )
+
         let accelerometerStreamHandler = FPPAccelerometerStreamHandlerPlus()
         let accelerometerStreamHandlerName = "dev.fluttercommunity.plus/sensors/accelerometer"
         let accelerometerChannel = FlutterEventChannel(
